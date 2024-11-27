@@ -1,4 +1,4 @@
-# certificate_Ready.py
+# certificateReady.py
 
 import io
 import qrcode
@@ -11,7 +11,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.colors import HexColor
 from reportlab.lib.utils import ImageReader
 
-def certificate_Ready(USERNAME_INPUT="Sir Issac Newton", CERTIFICATE_ID="XXXXYYYYXXXXYYYY", FROM_DATE="01-01-2000", TO_DATE="01-05-2000"):
+def generateCertificate(USERNAME_INPUT="Sir Issac Newton", CERTIFICATE_ID="XXXXYYYYXXXXYYYY", FROM_DATE="01-01-2000", TO_DATE="01-05-2000"):
   # Function for username alignment
   def username_Alignment(text, max_chars_per_line):
     words = text.split(" ")
@@ -280,4 +280,7 @@ def certificate_Ready(USERNAME_INPUT="Sir Issac Newton", CERTIFICATE_ID="XXXXYYY
   validity_Overlay(OUTPUT_FILE, OUTPUT_FILE, FROM_DATE, TO_DATE)
   verify_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
 
-certificate_Ready("Aswin V S", "1234567891234567", "07-10-2000", "31-12-2024")
+  return OUTPUT_FILE
+
+
+generateCertificate("Niwsa V S", "1234567891234567", "07-10-2000", "31-12-2024")
