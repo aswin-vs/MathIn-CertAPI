@@ -1,8 +1,9 @@
 name: Keep Server Alive
 
 on:
+  workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"  # Every 15 minutes
+    - cron: "*/14 * * * *"  # Run task every 14 minutes
 
 jobs:
   ping_server:
