@@ -1,17 +1,28 @@
-# Use the official Python image
+# Use a specific Python version as the base image
 FROM python:3.13-slim
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy project files to the container
-COPY . .
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  libpoppler-cpp-dev \
+  libpq-dev \
+  libxml2-dev \
+  libxslt-dev \
+  python3-dev \
+  && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
+# Install pip and necessary Python libraries
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the application port
+# Copy the application code into the container
+COPY . /app
+
+# Expose the port the app will run on
 EXPOSE 8000
 
-# Command to run the application
+# Define the command to run your app using Uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
