@@ -15,6 +15,10 @@ class CertificateRequest(BaseModel):
   from_date: str
   to_date: str
 
+@app.get("/health")
+async def health_check():
+  return {"status": "ok"}
+
 @app.post("/generate-certificate/")
 async def generate_certificate(
   data: CertificateRequest,
