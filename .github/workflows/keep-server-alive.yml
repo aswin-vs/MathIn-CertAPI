@@ -1,0 +1,13 @@
+name: Keep Server Alive
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"  # Every 15 minutes
+
+jobs:
+  ping_server:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Ping Render Server
+      run: curl -s https://mathin-certapi.onrender.com/health > /dev/null
