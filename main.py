@@ -8,7 +8,7 @@ import os
 load_dotenv()
 app = FastAPI()
 
-API_KEY = os.getenv("API_KEY")
+API_KEY = os.getenv("CERT_API_KEY")
 if not API_KEY:
   raise RuntimeError("API key is not configured properly !")
 
