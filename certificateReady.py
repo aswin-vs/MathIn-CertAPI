@@ -1,6 +1,7 @@
 # certificateReady.py
 
 import io
+import os
 import qrcode
 from PIL import Image, ImageDraw
 from PyPDF2 import PdfReader, PdfWriter, PageObject
@@ -11,7 +12,8 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.colors import HexColor
 from reportlab.lib.utils import ImageReader
 
-def generateCertificate(USERNAME_INPUT="Sir Issac Newton", CERTIFICATE_ID="XXXXYYYYXXXXYYYY", FROM_DATE="01-01-2000", TO_DATE="01-05-2000"):
+async def generateCertificate(USERNAME_INPUT="User Name", CERTIFICATE_ID="AAAABBBBCCCCDDDD", FROM_DATE="dd-mm-yyyy", TO_DATE="DD-MM-YYYY", OUTPUT_FILE="certificate.pdf"):
+  
   # Function for username alignment
   def username_Alignment(text, max_chars_per_line):
     words = text.split(" ")
@@ -270,17 +272,25 @@ def generateCertificate(USERNAME_INPUT="Sir Issac Newton", CERTIFICATE_ID="XXXXY
     with open(output_pdf_path, "wb") as output_file:
       pdf_writer.write(output_file)
 
+  # Main constants
   INPUT_FILE = "certificateTemplate.pdf"
-  OUTPUT_FILE = "certificate.pdf"
+  OUTPUT_FILE = OUTPUT_FILE
 
-  # Execution of functions
-  username_Overlay(INPUT_FILE, OUTPUT_FILE, USERNAME_INPUT)
-  certificateId_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
-  generateQR_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
-  validity_Overlay(OUTPUT_FILE, OUTPUT_FILE, FROM_DATE, TO_DATE)
-  verify_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
+  # Ensure input file exists
+  if not os.path.exists(INPUT_FILE):
+    raise FileNotFoundError(f"Template file '{INPUT_FILE}' not found !")
 
-  return OUTPUT_FILE
+  try:
+    username_Overlay(INPUT_FILE, OUTPUT_FILE, USERNAME_INPUT)
+    certificateId_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
+    generateQR_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
+    validity_Overlay(OUTPUT_FILE, OUTPUT_FILE, FROM_DATE, TO_DATE)
+    verify_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
+
+    return OUTPUT_FILE
+  
+  except Exception as e:
+    raise RuntimeError(f"Error generating certificate: {str(e)}.")
 
 
-generateCertificate("Niwsa V S", "1234567891234567", "07-10-2000", "31-12-2024")
+# generateCertificate("Niwsa V S", "1234567891234567", "07-10-2000", "31-12-2024", "098765432187_output.pdf")

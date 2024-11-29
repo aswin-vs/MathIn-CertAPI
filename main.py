@@ -1,13 +1,16 @@
-from fastapi import FastAPI, HTTPException, Header
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request, Header
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from certificateReady import generateCertificate
+from dotenv import load_dotenv
 import os
 
+load_dotenv()
 app = FastAPI()
 
-API_KEY_ENV = "CERT_API_KEY"
-TEMPLATE_PATH = "certificateTemplate.pdf"
+API_KEY = os.getenv("API_KEY")
+if not API_KEY:
+  raise RuntimeError("API key is not configured properly !")
 
 class CertificateRequest(BaseModel):
   username: str
@@ -15,54 +18,65 @@ class CertificateRequest(BaseModel):
   from_date: str
   to_date: str
 
+@app.middleware("http")
+async def ip_restriction_middleware(request: Request, call_next):
+  allowed_hosts = {"localhost", "127.0.0.1", "*"}
+  client_host = request.client.host
+  host_header = request.headers.get("host", "")
+
+  try:
+    if request.url.path == "/health":
+      return await call_next(request)
+
+    if client_host not in allowed_hosts and not any(host in host_header for host in allowed_hosts):
+      raise HTTPException(status_code=403, detail="Access forbidden: Unauthorized host IP !")
+    
+    return await call_next(request)
+
+  except HTTPException as e:
+    return JSONResponse(status_code=e.status_code, content={"Detail": e.detail})
+  except Exception as e:
+    return JSONResponse(status_code=500, content={"Detail": f"Internal server error: {str(e)} !"})
+
 @app.get("/health")
 async def health_check():
   return {"status": "ok"}
 
 @app.post("/generate-certificate/")
-async def generate_certificate(
+async def generate_certificate_endpoint(
   data: CertificateRequest,
-  x_api_key: str = Header(default=None)
+  x_api_key: str = Header(...),
 ):
-  # Validate the API key
-  expected_api_key = os.getenv(API_KEY_ENV)
-  if not expected_api_key or x_api_key != expected_api_key:
-    raise HTTPException(status_code=401, detail="Invalid or missing API key.")
+  
+  if x_api_key != API_KEY:
+    raise HTTPException(status_code=401, detail="Unauthorized: Invalid API key !")
 
-  # Create a unique output file based on certificate_id
-  output_file = f"certificateOutput_{data.certificate_id}.pdf"
+  output_file = f"{data.certificate_id}_certificate.pdf"
 
   try:
-    # Generate the certificate
-    generateCertificate(
-      TEMPLATE_PATH=TEMPLATE_PATH,
+    await generateCertificate(
       USERNAME_INPUT=data.username,
       CERTIFICATE_ID=data.certificate_id,
       FROM_DATE=data.from_date,
-      TO_DATE=data.to_date
+      TO_DATE=data.to_date,
+      OUTPUT_FILE=output_file
     )
 
-    # Ensure the generated file exists
     if not os.path.exists(output_file):
-      raise HTTPException(status_code=500, detail="Certificate generation failed.")
+      raise HTTPException(status_code=500, detail="Certificate generation failed !")
 
-    # Return the PDF as a response
-    response = FileResponse(
+    return FileResponse(
       output_file,
       media_type="application/pdf",
-      filename="certificate.pdf"
+      filename=f"certificate_{data.certificate_id}.pdf",
     )
 
-    # Cleanup the generated file after the response is sent
-    @response.background
-    def cleanup():
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=f"Error generating certificate: {str(e)} !")
+  
+  finally:
+    try:
       if os.path.exists(output_file):
         os.remove(output_file)
-
-    return response
-
-  except Exception as e:
-    # Clean up the file in case of any errors
-    if os.path.exists(output_file):
-      os.remove(output_file)
-    raise HTTPException(status_code=500, detail=f"Error generating certificate: {str(e)}")
+    except Exception as e:
+      raise HTTPException(status_code=500, detail=f"Error removing used files: {str(e)} !")

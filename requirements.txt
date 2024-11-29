@@ -1,5 +1,7 @@
 fastapi
 uvicorn
+python-dotenv
+pydantic
 PyPDF2
 qrcode
 Pillow
