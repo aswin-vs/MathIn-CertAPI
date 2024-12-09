@@ -20,7 +20,7 @@ class CertificateRequest(BaseModel):
 
 @app.middleware("http")
 async def ip_restriction_middleware(request: Request, call_next):
-  allowed_hosts = {"localhost", "127.0.0.1", "*"}
+  allowed_hosts = {"localhost", "127.0.0.1", "157.49.233.105"}
   client_host = request.client.host
   host_header = request.headers.get("host", "")
 
