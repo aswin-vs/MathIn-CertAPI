@@ -1,13 +1,11 @@
 .DS_Store
-__pycache__/
 node_modules/
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
 *.db
 *.sqlite3
-*.env*
+*.env
 *.log
-
-1.py
-2.py
+*.docx

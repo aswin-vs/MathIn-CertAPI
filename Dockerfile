@@ -5,7 +5,7 @@ FROM python:3.13-slim
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential \
   libpoppler-cpp-dev \
   libpq-dev \
@@ -19,7 +19,11 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code into the container
-COPY . /app
+COPY . .
+
+# Create a non-root user for security
+RUN useradd -m appuser
+USER appuser
 
 # Expose the port the app will run on
 EXPOSE 8000

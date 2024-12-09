@@ -12,7 +12,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.colors import HexColor
 from reportlab.lib.utils import ImageReader
 
-async def generateCertificate(USERNAME_INPUT="User Name", CERTIFICATE_ID="AAAABBBBCCCCDDDD", FROM_DATE="dd-mm-yyyy", TO_DATE="DD-MM-YYYY", OUTPUT_FILE="certificate.pdf"):
+async def generateCertificate(USERNAME_INPUT="User Name", CERTIFICATE_ID="XXXXXXXXXXXXXXXX", FROM_DATE="dd-mm-yyyy", TO_DATE="DD-MM-YYYY", OUTPUT_FILE="XXXXXXXXXXXXXXXX_certificate.pdf"):
   
   # Function for username alignment
   def username_Alignment(text, max_chars_per_line):
@@ -272,11 +272,9 @@ async def generateCertificate(USERNAME_INPUT="User Name", CERTIFICATE_ID="AAAABB
     with open(output_pdf_path, "wb") as output_file:
       pdf_writer.write(output_file)
 
-  # Main constants
   INPUT_FILE = "certificateTemplate.pdf"
   OUTPUT_FILE = OUTPUT_FILE
 
-  # Ensure input file exists
   if not os.path.exists(INPUT_FILE):
     raise FileNotFoundError(f"Template file '{INPUT_FILE}' not found !")
 
@@ -290,7 +288,4 @@ async def generateCertificate(USERNAME_INPUT="User Name", CERTIFICATE_ID="AAAABB
     return OUTPUT_FILE
   
   except Exception as e:
-    raise RuntimeError(f"Error generating certificate: {str(e)}.")
-
-
-# generateCertificate("Niwsa V S", "1234567891234567", "07-10-2000", "31-12-2024", "098765432187_output.pdf")
+    raise RuntimeError(f"Error with 'generateCertificate' function !")
