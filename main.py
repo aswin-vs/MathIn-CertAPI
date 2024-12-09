@@ -48,8 +48,8 @@ async def generate_certificate_endpoint(
   x_api_key: str = Header(...),
 ):
   
-  if x_api_key != API_KEY:
-    raise HTTPException(status_code=401, detail="Unauthorized: Invalid API key !")
+  # if x_api_key != API_KEY:
+  #   raise HTTPException(status_code=401, detail="Unauthorized: Invalid API key !")
 
   output_file = f"{data.certificate_id}_certificate.pdf"
 
