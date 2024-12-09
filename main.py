@@ -18,25 +18,25 @@ class CertificateRequest(BaseModel):
   from_date: str
   to_date: str
 
-@app.middleware("http")
-async def ip_restriction_middleware(request: Request, call_next):
-  allowed_hosts = {"localhost", "127.0.0.1", "157.49.233.105"}
-  client_host = request.client.host
-  host_header = request.headers.get("host", "")
+# @app.middleware("http")
+# async def ip_restriction_middleware(request: Request, call_next):
+#   allowed_hosts = {"localhost", "127.0.0.1", "157.49.233.105"}
+#   client_host = request.client.host
+#   host_header = request.headers.get("host", "")
 
-  try:
-    if request.url.path == "/health":
-      return await call_next(request)
+#   try:
+#     if request.url.path == "/health":
+#       return await call_next(request)
 
-    if client_host not in allowed_hosts and not any(host in host_header for host in allowed_hosts):
-      raise HTTPException(status_code=403, detail="Access forbidden: Unauthorized host IP !")
+#     if client_host not in allowed_hosts and not any(host in host_header for host in allowed_hosts):
+#       raise HTTPException(status_code=403, detail="Access forbidden: Unauthorized host IP !")
     
-    return await call_next(request)
+#     return await call_next(request)
 
-  except HTTPException as e:
-    return JSONResponse(status_code=e.status_code, content={"Detail": e.detail})
-  except Exception as e:
-    return JSONResponse(status_code=500, content={"Detail": f"Internal server error: {str(e)} !"})
+#   except HTTPException as e:
+#     return JSONResponse(status_code=e.status_code, content={"Detail": e.detail})
+#   except Exception as e:
+#     return JSONResponse(status_code=500, content={"Detail": f"Internal server error: {str(e)} !"})
 
 @app.get("/health")
 async def health_check():
