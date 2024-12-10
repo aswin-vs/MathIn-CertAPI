@@ -9,6 +9,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.lib.colors import HexColor
 from reportlab.lib.utils import ImageReader
 
@@ -239,9 +240,13 @@ async def generateCertificate(USERNAME_INPUT="User Name", CERTIFICATE_ID="XXXXXX
     page_number = 0
     font_path = "fonts/RobotoMono-SemiBold.ttf"
     font_name = "RobotoMono"
+    font_size = 13
     url = "https://aswin-vs.github.io/MathIn/verify/" + certificate_id
 
     pdfmetrics.registerFont(TTFont(font_name, font_path))
+    buffer = 10
+    url_width = stringWidth(url, font_name, font_size) + buffer
+
     pdf_reader = PdfReader(input_pdf_path)
     original_page = pdf_reader.pages[page_number]
     page_width = original_page.mediabox.width
@@ -249,9 +254,9 @@ async def generateCertificate(USERNAME_INPUT="User Name", CERTIFICATE_ID="XXXXXX
     packet = io.BytesIO()
 
     can = canvas.Canvas(packet, pagesize=(page_width, page_height))
-    can.setFont(font_name, 13)
+    can.setFont(font_name, font_size)
     can.setFillColor(HexColor("#F9F7F7"))
-    can.linkURL(url, (x, y - 5, x + 100, y + 20), relative=1)
+    can.linkURL(url, (x, y - 5, x + url_width, y + 20), relative=1)
     can.drawString(x, y, url)
     can.save()
 
@@ -271,7 +276,7 @@ async def generateCertificate(USERNAME_INPUT="User Name", CERTIFICATE_ID="XXXXXX
 
     with open(output_pdf_path, "wb") as output_file:
       pdf_writer.write(output_file)
-
+  
   INPUT_FILE = "certificateTemplate.pdf"
   OUTPUT_FILE = OUTPUT_FILE
 
