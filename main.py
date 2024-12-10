@@ -1,13 +1,13 @@
 # main.py
 
 import os
-from fastapi import FastAPI, HTTPException, Header
+from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from certificateReady import generateCertificate
 
 # from dotenv import load_dotenv
 # load_dotenv()
-
 API_KEY = os.getenv("CERT_API_KEY")
 if not API_KEY:
   raise RuntimeError("API key not configured properly !")
@@ -24,12 +24,20 @@ class CertificateRequest(BaseModel):
 async def health_check():
   return {"status": "ok", "message": "MathIn-CertAPI is healthy and running !"}
 
+def file_cleanup(file_path: str):
+  try:
+    if os.path.exists(file_path):
+      os.remove(file_path)
+      print(f"Deleted file: {file_path}")
+  except Exception as e:
+    print(f"Error deleting file {file_path}: {str(e)}")
+
 @app.post("/generate-certificate/")
 async def generate_certificate(data: CertificateRequest, x_api_key: str = Header(None)):
 
   if x_api_key != API_KEY:
     raise HTTPException(status_code=401, detail="Unauthorized: Invalid API key !")
-  
+
   try:
     os.makedirs("generatedCertificates", exist_ok=True)
     output_file = os.path.join("generatedCertificates", f"{data.certificate_id}_certificate.pdf")
@@ -43,24 +51,17 @@ async def generate_certificate(data: CertificateRequest, x_api_key: str = Header
     )
 
     if not os.path.exists(output_file):
-      raise HTTPException(status_code=500, detail="Certificate generation failed !")
+      raise HTTPException(status_code=500, detail="Expected certificate file not found !")
 
-    return {"message": "Certificate generated successfully !", "file_path": output_file}
+    return FileResponse(
+      path=output_file,
+      media_type="application/pdf",
+      filename=f"{data.certificate_id}_certificate.pdf",
+      background=Depends(lambda: file_cleanup(output_file))
+    )
 
+  except HTTPException:
+    raise  
   except Exception as e:
-    raise HTTPException(status_code=500, detail=f"Internal server error !")
-
-@app.get("/viewcertificates")
-async def view_certificates():
-  folder = "generatedCertificates"
-  
-  # Ensure the folder exists
-  if not os.path.exists(folder):
-    return {"message": "No certificates folder found.", "files": []}
-  
-  # List files in the folder
-  try:
-    files = [f for f in os.listdir(folder) if f.endswith(".pdf")]
-    return {"message": "Certificates found.", "files": files}
-  except Exception as e:
-    raise HTTPException(status_code=500, detail=f"Error reading folder: {str(e)}")
+    print(f"Unexpected error: {str(e)}")
+    raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
