@@ -1,7 +1,7 @@
 # main.py
 
 import os
-from fastapi import FastAPI, HTTPException, Header, Request, Depends
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.responses import FileResponse
 from fastapi.background import BackgroundTasks
 from pydantic import BaseModel
@@ -12,7 +12,6 @@ if not API_KEY:
   raise RuntimeError("API key not configured properly !")
 
 app = FastAPI()
-ALLOWED_IP = ["127.0.0.1", "157.46.92.41"]
 
 class CertificateRequest(BaseModel):
   username: str
@@ -32,18 +31,11 @@ def file_cleanup(file_path: str):
   except Exception as e:
     print(f"Error deleting file {file_path}: {str(e)}")
 
-def ip_filter(request: Request):
-  client_ip = request.client.host
-  if client_ip not in ALLOWED_IP:
-    raise HTTPException(status_code=403, detail="Forbidden: IP not allowed !")
-  return True
-
 @app.post("/generate-certificate")
 async def generate_certificate(
   data: CertificateRequest,
   background_tasks: BackgroundTasks,
-  x_api_key: str = Header(None),
-  ip_check: bool = Depends(ip_filter)
+  x_api_key: str = Header(None)
 ):
 
   if x_api_key != API_KEY:
@@ -71,7 +63,7 @@ async def generate_certificate(
       media_type="application/pdf",
       filename=f"{data.certificate_id}_certificate.pdf"
     )
-
+ 
   except Exception as e:
     print(f"Unexpected error: {str(e)}")
     raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
