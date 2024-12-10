@@ -1,8 +1,9 @@
 # main.py
 
 import os
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.responses import FileResponse
+from fastapi.background import BackgroundTasks
 from pydantic import BaseModel
 from certificateReady import generateCertificate
 
@@ -32,8 +33,12 @@ def file_cleanup(file_path: str):
   except Exception as e:
     print(f"Error deleting file {file_path}: {str(e)}")
 
-@app.post("/generate-certificate/")
-async def generate_certificate(data: CertificateRequest, x_api_key: str = Header(None)):
+@app.post("/generate-certificate")
+async def generate_certificate(
+  data: CertificateRequest,
+  background_tasks: BackgroundTasks,
+  x_api_key: str = Header(None)
+):
 
   if x_api_key != API_KEY:
     raise HTTPException(status_code=401, detail="Unauthorized: Invalid API key !")
@@ -53,11 +58,13 @@ async def generate_certificate(data: CertificateRequest, x_api_key: str = Header
     if not os.path.exists(output_file):
       raise HTTPException(status_code=500, detail="Expected certificate file not found !")
 
+    # Schedule the file cleanup task
+    background_tasks.add_task(file_cleanup, output_file)
+
     return FileResponse(
       path=output_file,
       media_type="application/pdf",
-      filename=f"{data.certificate_id}_certificate.pdf",
-      background=Depends(lambda: file_cleanup(output_file))
+      filename=f"{data.certificate_id}_certificate.pdf"
     )
 
   except HTTPException:
