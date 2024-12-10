@@ -1,6 +1,6 @@
 import os
-from fastapi import FastAPI, HTTPException, Header
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from certificateReady import generateCertificate
 
@@ -24,9 +24,19 @@ class CertificateRequest(BaseModel):
 async def health_check():
   return {"status": "ok", "message": "MathIn-CertAPI is healthy and running!"}
 
+# Cleanup logic for temporary files
+def file_cleanup(file_path: str):
+  try:
+    if os.path.exists(file_path):
+      os.remove(file_path)
+      print(f"Deleted file: {file_path}")
+  except Exception as e:
+    print(f"Error deleting file {file_path}: {str(e)}")
+
 # Generate certificate endpoint
 @app.post("/generate-certificate/")
 async def generate_certificate(data: CertificateRequest, x_api_key: str = Header(None)):
+
   # Check API key
   if x_api_key != API_KEY:
     raise HTTPException(status_code=401, detail="Unauthorized: Invalid API key!")
@@ -51,26 +61,17 @@ async def generate_certificate(data: CertificateRequest, x_api_key: str = Header
     if not os.path.exists(output_file):
       raise HTTPException(status_code=500, detail="Certificate generation failed! File not found.")
 
-    # Return the file as a response
-    response = FileResponse(
+    # Use FastAPI's dependency injection to handle file cleanup after the response
+    return FileResponse(
       path=output_file,
       media_type="application/pdf",
       filename=f"{data.certificate_id}_certificate.pdf",
+      background=Depends(lambda: file_cleanup(output_file))
     )
-
-    # Clean up the file after sending
-    @response.call_on_close
-    def cleanup():
-      try:
-        os.remove(output_file)
-      except Exception as e:
-        print(f"Error deleting file {output_file}: {str(e)}")
-
-    return response
 
   except HTTPException:
     raise  # Re-raise known HTTP exceptions
   except Exception as e:
     # Log the exact error for debugging
     print(f"Unexpected error: {str(e)}")
-    return JSONResponse(status_code=500, content={"detail": f"Internal server error: {str(e)}"})
+    raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
