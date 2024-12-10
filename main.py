@@ -26,9 +26,11 @@ async def generate_certificate(data: CertificateRequest, x_api_key: str = Header
     raise HTTPException(status_code=401, detail="Unauthorized: Invalid API key!")
 
   try:
+    # Ensure the output directory exists
     os.makedirs("generatedCertificates", exist_ok=True)
     output_file = os.path.join("generatedCertificates", f"{data.certificate_id}_certificate.pdf")
 
+    # Generate the certificate
     await generateCertificate(
       USERNAME_INPUT=data.username,
       CERTIFICATE_ID=data.certificate_id,
@@ -37,15 +39,18 @@ async def generate_certificate(data: CertificateRequest, x_api_key: str = Header
       OUTPUT_FILE=output_file,
     )
 
+    # Check if the file was created successfully
     if not os.path.exists(output_file):
       raise HTTPException(status_code=500, detail="Certificate generation failed!")
 
+    # Send the file as a response
     response = FileResponse(
       path=output_file,
       media_type="application/pdf",
       filename=f"{data.certificate_id}_certificate.pdf",
     )
 
+    # Cleanup: Delete the file after sending it
     @response.call_on_close
     def cleanup():
       try:
@@ -56,4 +61,5 @@ async def generate_certificate(data: CertificateRequest, x_api_key: str = Header
     return response
 
   except Exception as e:
-    raise HTTPException(status_code=500, detail="Internal server error !")
+    print(f"Internal Server Error: {str(e)}")
+    raise HTTPException(status_code=500, detail="Internal server error!")
