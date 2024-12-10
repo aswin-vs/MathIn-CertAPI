@@ -8,6 +8,3 @@ node_modules/
 *.sqlite3
 *.env*
 *.log
-
-1.py
-2.py
