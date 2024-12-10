@@ -1,15 +1,12 @@
-# main.py
-
 import os
 from fastapi import FastAPI, HTTPException, Header
-# from dotenv import load_dotenv
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from certificateReady import generateCertificate
 
-# load_dotenv()
 API_KEY = os.getenv("CERT_API_KEY")
 if not API_KEY:
-  raise RuntimeError("API key not configured properly !")
+  raise RuntimeError("API key not configured properly!")
 
 app = FastAPI()
 
@@ -21,14 +18,13 @@ class CertificateRequest(BaseModel):
 
 @app.get("/health")
 async def health_check():
-  return {"status": "ok", "message": "MathIn-CertAPI is healthy and running !"}
+  return {"status": "ok", "message": "MathIn-CertAPI is healthy and running!"}
 
 @app.post("/generate-certificate/")
 async def generate_certificate(data: CertificateRequest, x_api_key: str = Header(None)):
-
   if x_api_key != API_KEY:
-    raise HTTPException(status_code=401, detail="Unauthorized: Invalid API key !")
-  
+    raise HTTPException(status_code=401, detail="Unauthorized: Invalid API key!")
+
   try:
     os.makedirs("generatedCertificates", exist_ok=True)
     output_file = os.path.join("generatedCertificates", f"{data.certificate_id}_certificate.pdf")
@@ -42,9 +38,22 @@ async def generate_certificate(data: CertificateRequest, x_api_key: str = Header
     )
 
     if not os.path.exists(output_file):
-      raise HTTPException(status_code=500, detail="Certificate generation failed !")
+      raise HTTPException(status_code=500, detail="Certificate generation failed!")
 
-    return {"message": "Certificate generated successfully !", "file_path": output_file}
+    response = FileResponse(
+      path=output_file,
+      media_type="application/pdf",
+      filename=f"{data.certificate_id}_certificate.pdf",
+    )
+
+    @response.call_on_close
+    def cleanup():
+      try:
+        os.remove(output_file)
+      except Exception as e:
+        print(f"Error deleting file {output_file}: {str(e)}")
+
+    return response
 
   except Exception as e:
     raise HTTPException(status_code=500, detail="Internal server error !")
