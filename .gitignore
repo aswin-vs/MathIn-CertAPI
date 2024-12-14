@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+node_modules/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.env*
+*.log

@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pydantic
+PyPDF2
+qrcode
+Pillow
+reportlab
