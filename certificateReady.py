@@ -194,7 +194,7 @@ async def generateCertificate(USERNAME_INPUT="User Name", CERTIFICATE_ID="XXXXXX
 
   # Function for validity overlay
   def validity_Overlay(input_pdf_path, output_pdf_path, from_date, to_date):
-    x, y = 240, 107.5
+    x, y = 230, 107.5
     page_number = 0
     char_spacing = 1.3
     font_path = "fonts/RobotoMono-Bold.ttf"
