@@ -5,3 +5,4 @@ PyPDF2
 qrcode
 Pillow
 reportlab
+firebase-admin
