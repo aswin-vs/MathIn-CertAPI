@@ -1,5 +1,7 @@
-from dotenv import load_dotenv
-load_dotenv()
+# main.py
+
+# from dotenv import load_dotenv
+# load_dotenv()
 
 import os
 import logging
