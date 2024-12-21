@@ -18,10 +18,10 @@ from firebase_admin import credentials, firestore
 app = FastAPI()
 app.add_middleware(
   CORSMiddleware,
-  allow_origins=["*"],
+  allow_origins=["https://aswin-vs.github.io", "https://console.cron-job.org"],
   allow_credentials=True,
-  allow_methods=["*"],
-  allow_headers=["*"],
+  allow_methods=["GET", "POST"],
+  allow_headers=["Authorization", "Content-Type", "X-API-KEY"],
 )
 
 API_KEY = os.getenv("CERT_API_KEY")
