@@ -306,15 +306,15 @@ async def generateCertificate(USERNAME_INPUT="User Name", CERTIFICATE_ID="XXXXXX
   if not os.path.exists(INPUT_FILE):
     raise FileNotFoundError(f"Template file '{INPUT_FILE}' not found !")
 
-  try:
-    username_Overlay(INPUT_FILE, OUTPUT_FILE, USERNAME_INPUT)
-    certificateId_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
-    generateQR_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
-    validity_Overlay(OUTPUT_FILE, OUTPUT_FILE, FROM_DATE, TO_DATE)
-    verify_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
-    update_Pdf_Metadata(OUTPUT_FILE, OUTPUT_FILE, title="MathIn Pro - Certificate", author="MathIn", subject="Certificate for successful completion of MathIn Pro test")
+  # try:
+  username_Overlay(INPUT_FILE, OUTPUT_FILE, USERNAME_INPUT)
+  certificateId_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
+  generateQR_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
+  validity_Overlay(OUTPUT_FILE, OUTPUT_FILE, FROM_DATE, TO_DATE)
+  verify_Overlay(OUTPUT_FILE, OUTPUT_FILE, CERTIFICATE_ID)
+  update_Pdf_Metadata(OUTPUT_FILE, OUTPUT_FILE, title="MathIn Pro - Certificate", author="MathIn", subject="Certificate for successful completion of MathIn Pro test")
 
-    return OUTPUT_FILE
+  return OUTPUT_FILE
   
-  except Exception as e:
-    raise RuntimeError(f"Error with 'generateCertificate' function !")
+  # except Exception as e:
+  #   raise RuntimeError(f"Error with 'generateCertificate' function !")
